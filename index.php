@@ -1,4 +1,4 @@
 
-	<?=include 'content.php'?>
+	<?=include './app/content.php'?>
 
 
