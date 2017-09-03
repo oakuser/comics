@@ -3,7 +3,9 @@ namespace Comics;
 
 class DonorUnicomics
 {
-	const HOST = 'http://unicomics.ru';
+	const HOST = 'http://unicomics.ru',
+        URL = self::HOST . '/comics/series/',
+        TITLE = 'unicomics.ru';
 
 	public static function getHtml()
     {
@@ -23,19 +25,23 @@ class DonorUnicomics
 
 	protected static function getComicsList()
 	{
-        $url = self::HOST . '/comics/series';
+	    $currentPage = Query::get('page') ? Query::get('page') : 1;
+        $url = self::HOST . '/comics/series' . ($currentPage > 1 ? '/page/' . $currentPage : '');
         $page = file_get_contents($url);
         $html = str_get_html($page);
 
-        $data = array();
+        //кол-во страниц
+        preg_match('/new Paginator\(\'paginator1\', (\d+), \d+, \d+, \".+\"\);/', $page, $matches);
+
+        $data = array('url' => self::URL, 'site_title' => self::TITLE, 'pages' => (int)$matches[1], 'curr_page' => $currentPage);
         foreach ($html->find('.list_comics') as $comicsItem) {
             $name = $comicsItem->find('.list_title_en', 0)->innertext;
 
-            $data[$name] = array(
+            $data['items'][$name] = array(
                 'name_ru'		=> trim($comicsItem->find('.list_title', 0)->innertext),
                 'url_descr'		=> $comicsItem->find('.descr a', 0)->href,
-                'url_online'	=> $comicsItem->find('.online a', 0)->href,
-                'img'			=> $comicsItem->find('.left_comics img', 0)->src,
+                'next_page_url'	=> $comicsItem->find('.online a', 0)->href,
+                'img_src'		=> $comicsItem->find('.left_comics img', 0)->src,
             );
         }
 
