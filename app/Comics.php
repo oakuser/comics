@@ -8,8 +8,8 @@ class Comics
 {
 	public static function getHtml($params)
 	{
-		$comics = self::getComicsByParams($params);
-		$html = self::render($params, $comics);
+		$data = self::getComicsByParams($params);
+		$html = self::render($params, $data);
 
 		return $html;
 	}
@@ -19,14 +19,21 @@ class Comics
 		$result = array();
 
 		if (!isset($params['site'])) {
-			var_dump(glob(__DIR__ . '\Donor*.php'));
+			$donorClassess = glob(__DIR__ . '\Donor*.php');
+			foreach ($donorClassess as $donorClass) {
+				preg_match('/Donor(.+)\.php$/', $donorClass, $matches);
+				$result[] = $matches[1];
+			}
 		}
 
-		return array();
+		return $result;
 	}
 
-	protected static function render($params, $comics)
+	protected static function render($params, $data)
 	{
-		return 'hii';
+		//get tpl by param
+		if (!isset($params['site'])) $tpl = 'Comics\ViewSitesList';
+
+		return $tpl::getHtml($data);
 	}
 }
